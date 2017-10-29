@@ -2,14 +2,13 @@
 #
 # This handler logs sensu events to Splunkstorm.
 #
-# Requires the rest-client and json gems
-# gem install rest-client
+# Requires the json gem
 # gem install json
 #
 # Released under the same terms as Sensu (the MIT license); see LICENSE
 # for details.
 
-require 'rest-client'
+require 'net/https'
 require 'json'
 
 API_HOST = 'api.splunkstorm.com'.freeze
@@ -53,11 +52,15 @@ module Sensu
           api_url = "#{URL_SCHEME}://#{API_HOST}"
           api_params = URI.escape(event_params.map { |k, v| "#{k}=#{v}" }.join('&'))
           endpoint_path = "#{API_VERSION}/#{API_ENDPOINT}?#{api_params}"
+          uri = URI.parse("#{api_url}/#{endpoint_path}")
 
-          request = RestClient::Resource.new(api_url, user: 'sensu', password: settings['splunkstorm']['access_token'])
+          http = Net::HTTP.new(uri.host, uri.port)
+          http.use_ssl = true
 
-          response = request[endpoint_path].post(JSON.dump(@event))
-          puts response
+          request = Net::HTTP::Post.new(url.request_uri, user: 'sensu', password: settings['splunkstorm']['access_token'])
+          request.body = @event.to_json
+          response = http.request(request)
+          puts JSON.parse(response.body)
         end
       rescue Timeout::Error
         puts 'splunkstorm -- timed out while attempting to log incident -- ' + incident_key

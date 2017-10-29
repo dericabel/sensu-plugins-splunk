@@ -8,6 +8,7 @@
 
 ## Files
  * bin/handler-splunkstorm
+ * bin/handler-splunk-hec
 
 ## Usage
 
@@ -17,6 +18,15 @@
     "project_id": "12345",
     "access_token": "abcde"
   }
+}
+
+{
+  "splunk-hec" : {
+        "token" : "[your token here]",
+        "index" : "[index]",
+        "host" : "[splunk host]"
+    }
+
 }
 ```
 
